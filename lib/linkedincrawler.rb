@@ -36,8 +36,11 @@ class LinkedinCrawler
     profile_html = getPage(profile_url, @driver, nil, 5, false).page_source
 
     # Parse profile and add to output
-    l = LinkedinParser.new(profile_html, profile_url, {timestamp: Time.now})
-    @output += JSON.parse(l.results_by_job)
+    begin
+      l = LinkedinParser.new(profile_html, profile_url, {timestamp: Time.now})
+      @output += JSON.parse(l.results_by_job)
+    rescue
+    end
   end
 
   # Print output in JSON
