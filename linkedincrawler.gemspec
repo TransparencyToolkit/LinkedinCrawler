@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'linkedincrawler'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.date        = '2015-11-01'
   s.summary     = 'Crawls public LinkedIn profiles'
   s.description = 'Crawls public LinkedIn profiles via Google'
@@ -10,8 +10,4 @@ Gem::Specification.new do |s|
   s.homepage    =
     'https://github.com/TransparencyToolkit/linkedincrawler'
   s.license       = 'GPL'
-
-  s.add_dependency 'linkedinparser'
-  s.add_dependency 'generalscraper'
-  s.add_dependency 'selenium-webdriver'
 end
