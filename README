@@ -1,0 +1,9 @@
+Crawler for LinkedIn public profiles.
+
+To install-
+gem install linkedincrawler
+
+To run-
+c = LinkedinCrawler.new("search terms")
+c.search
+puts c.gen_json (to print the json)
