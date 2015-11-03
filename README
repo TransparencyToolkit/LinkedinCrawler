@@ -4,6 +4,6 @@ To install-
 gem install linkedincrawler
 
 To run-
-c = LinkedinCrawler.new("search terms")
+c = LinkedinCrawler.new("search terms", # of browsers, "path/to/proxies", [min wait, max wait])
 c.search
 puts c.gen_json (to print the json)
