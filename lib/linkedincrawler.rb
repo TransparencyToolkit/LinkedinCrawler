@@ -19,11 +19,21 @@ class LinkedinCrawler
   def search
     # Run Google search
     g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @proxy_list)
-    
-    # Scrape each resulting LinkedIn page
-    JSON.parse(g.getURLs).each do |profile|
-      if profile.include?(".linkedin.") && !profile.include?("/search")
-        scrape(profile)
+    begin
+      urls = g.getURLs
+    rescue # Search again if it didn't work the first time
+      search
+    end
+
+    # Search again if it didn't run
+    if urls.length == 0 || urls.empty?
+      search
+    else
+      # Scrape each resulting LinkedIn page
+      JSON.parse(urls).each do |profile|
+        if profile.include?(".linkedin.") && !profile.include?("/search")
+          scrape(profile)
+        end
       end
     end
 
@@ -64,3 +74,6 @@ class LinkedinCrawler
     JSON.pretty_generate(@output)
   end
 end
+c = LinkedinCrawler.new("remotely piloted aircraft", 5, "/home/shidash/proxylist2", [3, 5])
+c.search
+File.write("test.json", c.gen_json)
