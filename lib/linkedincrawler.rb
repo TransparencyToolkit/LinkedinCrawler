@@ -18,7 +18,7 @@ class LinkedinCrawler
   # Run search terms and get results
   def search
     # Run Google search
-    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @proxy_list)
+    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, nil)
     begin
       urls = g.getURLs
     rescue # Search again if it didn't work the first time
