@@ -74,6 +74,3 @@ class LinkedinCrawler
     JSON.pretty_generate(@output)
   end
 end
-c = LinkedinCrawler.new("remotely piloted aircraft", 5, "/home/shidash/proxylist2", [3, 5])
-c.search
-File.write("test.json", c.gen_json)
