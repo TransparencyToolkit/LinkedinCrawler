@@ -19,23 +19,23 @@ class LinkedinCrawler
   def search
     # Run Google search
     g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, nil)
-    begin
+   # begin
       urls = g.getURLs
-    rescue # Search again if it didn't work the first time
-      search
-    end
+   # rescue # Search again if it didn't work the first time
+    #  search
+    #end
 
     # Search again if it didn't run
-    if urls.length == 0 || urls.empty?
+   # if urls.length == 0 || urls.empty?
       search
-    else
+   # else
       # Scrape each resulting LinkedIn page
       JSON.parse(urls).each do |profile|
         if profile.include?(".linkedin.") && !profile.include?("/search")
           scrape(profile)
         end
       end
-    end
+   # end
 
     # Close all the browsers
     @requests.close_all_browsers
