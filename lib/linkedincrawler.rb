@@ -27,7 +27,7 @@ class LinkedinCrawler
 
     # Search again if it didn't run
    # if urls.length == 0 || urls.empty?
-      search
+#      search
    # else
       # Scrape each resulting LinkedIn page
       JSON.parse(urls).each do |profile|
