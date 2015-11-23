@@ -6,44 +6,38 @@ require 'selenium-webdriver'
 require 'pry'
 
 class LinkedinCrawler
-  def initialize(search_terms, retry_limit, proxy_list, request_time)
+  def initialize(search_terms, retry_limit, requests, requests_google)
     @search_terms = search_terms
     @output = Array.new
+    
     @retry_limit = retry_limit
     @retry_count = 0
-    @proxy_list = proxy_list
-    @requests = RequestManager.new(@proxy_list, request_time, 5)
+    
+    @requests = requests
+    @requests_google = requests_google
   end
 
   # Run search terms and get results
   def search
     # Run Google search
-    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, nil)
-   # begin
-      urls = g.getURLs
-   # rescue # Search again if it didn't work the first time
-    #  search
-    #end
+    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google)
+    urls = g.getURLs
 
-    # Search again if it didn't run
-   # if urls.length == 0 || urls.empty?
-#      search
-   # else
-      # Scrape each resulting LinkedIn page
-      JSON.parse(urls).each do |profile|
-        if profile.include?(".linkedin.") && !profile.include?("/search")
-          scrape(profile)
-        end
+    # Scrape each resulting LinkedIn page
+    JSON.parse(urls).each do |profile|
+      if check_right_page(profile)
+        scrape(profile)
       end
-   # end
+    end
 
-    # Close all the browsers
+    # Close all the browsers when done
     @requests.close_all_browsers
   end
 
   # Check that it is actually a LinkedIn profile page
   def check_right_page(profile_url)
     return !profile_url.include?("www.google") &&
+           profile_url.include?(".linkedin.") &&
            !profile_url.include?("linkedin.com/pub/dir") &&
            !profile_url.include?("/search") &&
            @retry_count < @retry_limit
@@ -65,6 +59,8 @@ class LinkedinCrawler
         @requests.restart_browser
         @retry_count += 1
         scrape(profile_url)
+      else
+        @retry_count = 0
       end
     end
   end

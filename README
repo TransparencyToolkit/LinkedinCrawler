@@ -1,9 +1,13 @@
 Crawler for LinkedIn public profiles.
 
 To install-
+gem install requestmanager
+gem install generalscraper
 gem install linkedincrawler
 
 To run-
-c = LinkedinCrawler.new("search terms", # of browsers, "path/to/proxies", [min wait, max wait])
+requests_linkedin = RequestManager.new("path/to/proxies", [min wait, max wait], # of browsers)
+requests_google = RequestManager.new("path/to/proxies", [min wait, max wait], # of browsers)
+c = LinkedinCrawler.new("search terms", max retry #, requests_linkedin, requests_google)
 c.search
 puts c.gen_json (to print the json)
