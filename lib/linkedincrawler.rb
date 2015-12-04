@@ -50,7 +50,7 @@ class LinkedinCrawler
 
     # Parse profile and add to output
     begin
-      l = LinkedinParser.new(profile_html, profile_url, {timestamp: Time.now})
+      l = LinkedinParser.new(profile_html, profile_url, {timestamp: Time.now, search_terms: @search_terms})
       @output += JSON.parse(l.results_by_job)
       @retry_count = 0
     rescue
