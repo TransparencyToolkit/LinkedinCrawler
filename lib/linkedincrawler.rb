@@ -6,7 +6,7 @@ require 'selenium-webdriver'
 require 'pry'
 
 class LinkedinCrawler
-  def initialize(search_terms, retry_limit, requests, requests_google)
+  def initialize(search_terms, retry_limit, requests, requests_google, solver_details)
     @search_terms = search_terms
     @output = Array.new
     
@@ -15,12 +15,13 @@ class LinkedinCrawler
     
     @requests = requests
     @requests_google = requests_google
+    @solver_details = solver_details
   end
 
   # Run search terms and get results
   def search
     # Run Google search
-    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google)
+    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details)
     urls = g.getURLs
 
     # Scrape each resulting LinkedIn page

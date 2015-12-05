@@ -8,6 +8,6 @@ gem install linkedincrawler
 To run-
 requests_linkedin = RequestManager.new("path/to/proxies", [min wait, max wait], # of browsers)
 requests_google = RequestManager.new("path/to/proxies", [min wait, max wait], # of browsers)
-c = LinkedinCrawler.new("search terms", max retry #, requests_linkedin, requests_google)
+c = LinkedinCrawler.new("search terms", max retry #, requests_linkedin, requests_google, solver_details hash or nil)
 c.search
 puts c.gen_json (to print the json)
