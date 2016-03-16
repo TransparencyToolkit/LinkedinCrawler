@@ -6,7 +6,7 @@ require 'selenium-webdriver'
 require 'pry'
 
 class LinkedinCrawler
-  def initialize(search_terms, retry_limit, requests, requests_google, solver_details)
+  def initialize(search_terms, retry_limit, requests, requests_google, requests_google2, solver_details)
     @search_terms = search_terms
     @output = Array.new
     
@@ -15,6 +15,7 @@ class LinkedinCrawler
     
     @requests = requests
     @requests_google = requests_google
+    @requests_google2 = requests_google2
     @solver_details = solver_details
   end
 
@@ -23,9 +24,13 @@ class LinkedinCrawler
     # Run Google search
     g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details)
     urls = g.getURLs
-
+   
+    # Look for new LI urls
+    g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details)
+    urls = JSON.parse(urls) + JSON.parse(g2.getURLs)
+    
     # Scrape each resulting LinkedIn page
-    JSON.parse(urls).each do |profile|
+    urls.each do |profile|
       if check_right_page(profile)
         scrape(profile)
       end
@@ -85,3 +90,4 @@ class LinkedinCrawler
     JSON.pretty_generate(@output)
   end
 end
+
