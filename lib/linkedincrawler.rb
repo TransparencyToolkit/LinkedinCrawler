@@ -6,7 +6,7 @@ require 'selenium-webdriver'
 require 'pry'
 
 class LinkedinCrawler
-  def initialize(search_terms, retry_limit, requests, requests_google, requests_google2, solver_details)
+  def initialize(search_terms, retry_limit, requests, requests_google, requests_google2, solver_details, cm_hash)
     @search_terms = search_terms
     @output = Array.new
     
@@ -17,10 +17,16 @@ class LinkedinCrawler
     @requests_google = requests_google
     @requests_google2 = requests_google2
     @solver_details = solver_details
+
+    # Handle crawler manager info
+    @cm_url = cm_hash[:crawler_manager_url] if cm_hash
+    @selector_id = cm_hash[:selector_id] if cm_hash
   end
 
   # Run search terms and get results
   def search
+
+    begin
     # Run Google search
     g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details)
     urls = g.getURLs
@@ -28,6 +34,9 @@ class LinkedinCrawler
     # Look for new LI urls
     g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details)
     urls = JSON.parse(urls) + JSON.parse(g2.getURLs)
+    rescue Exception
+      binding.pry
+    end
     
     # Scrape each resulting LinkedIn page
     urls.each do |profile|
@@ -77,12 +86,31 @@ class LinkedinCrawler
         @retry_count += 1
         scrape(profile_url)
       else # Just save it and move on
-        save_and_continue(parsed_profile)
+        report_results(parsed_profile, profile_url)
       end
       
     else # It succeeded!
-      save_and_continue(parsed_profile)
+      report_results(parsed_profile, profile_url)
     end
+  end
+
+  # Figure out how to report results
+  def report_results(results, link)
+    if @cm_url
+      report_incremental(results, link)
+    else
+      save_and_continue(results)
+    end
+  end
+
+  # Report results back to Harvester incrementally
+  def report_incremental(results, link)
+    curl_url = @cm_url+"/relay_results"
+    @retry_count = 0
+    c = Curl::Easy.http_post(curl_url,
+                             Curl::PostField.content('selector_id', @selector_id),
+                             Curl::PostField.content('status_message', "Collected " + link),
+                             Curl::PostField.content('results', JSON.pretty_generate(results)))
   end
 
   # Print output in JSON

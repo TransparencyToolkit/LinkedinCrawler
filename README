@@ -10,6 +10,6 @@ requests_linkedin = RequestManager.new("path/to/proxies", [min wait, max wait], 
 requests_google = RequestManager.new("path/to/proxies", [min wait, max wait], # of browsers)
 requests_google2 = RequestManager.new("path/to/proxies", [min wait, max wait], # of browsers)
 
-c = LinkedinCrawler.new("search terms", max retry #, requests_linkedin, requests_google, requests_google2, solver_details hash or nil)
+c = LinkedinCrawler.new("search terms", max retry #, requests_linkedin, requests_google, requests_google2, solver_details hash or nil, cm_hash)
 c.search
 puts c.gen_json (to print the json)
