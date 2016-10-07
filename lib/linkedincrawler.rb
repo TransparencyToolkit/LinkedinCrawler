@@ -27,7 +27,7 @@ class LinkedinCrawler
   def search
 
     begin
-    # Run Google search
+      # Run Google search
     g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details)
     urls = g.getURLs
    
