@@ -28,11 +28,11 @@ class LinkedinCrawler
 
     begin
       # Run Google search
-    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details)
+    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details, nil)
     urls = g.getURLs
    
     # Look for new LI urls
-    g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details)
+    g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details, nil)
     urls = JSON.parse(urls) + JSON.parse(g2.getURLs)
     rescue Exception
       binding.pry
