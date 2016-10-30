@@ -19,22 +19,24 @@ class LinkedinCrawler
     @solver_details = solver_details
 
     # Handle crawler manager info
+    @cm_hash = cm_hash
     @cm_url = cm_hash[:crawler_manager_url] if cm_hash
     @selector_id = cm_hash[:selector_id] if cm_hash
   end
 
   # Run search terms and get results
   def search
-
+   
     begin
       # Run Google search
-    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details, nil)
+    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details, @cm_hash)
     urls = g.getURLs
    
     # Look for new LI urls
-    g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details, nil)
+    g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details, @cm_hash)
     urls = JSON.parse(urls) + JSON.parse(g2.getURLs)
-    rescue Exception
+    rescue => e
+      report_status("Error running Google Crawler from LinkedIn Crawler: " +e.to_s)
       binding.pry
     end
     
@@ -47,6 +49,7 @@ class LinkedinCrawler
 
     # Close all the browsers when done
     @requests.close_all_browsers
+    report_status("Data collection completed for " + @search_terms.to_s)
   end
 
   # Check that it is actually a LinkedIn profile page
@@ -84,8 +87,10 @@ class LinkedinCrawler
       if @retry_count < @retry_limit
         @requests.restart_browser
         @retry_count += 1
+        report_status("Profile parsing failed for "+profile_url.to_s+". Retrying...")
         scrape(profile_url)
       else # Just save it and move on
+        report_status("Profile parsing failed for "+profile_url.to_s+". Moving on.")
         report_results(parsed_profile, profile_url)
       end
       
@@ -111,6 +116,16 @@ class LinkedinCrawler
                              Curl::PostField.content('selector_id', @selector_id),
                              Curl::PostField.content('status_message', "Collected " + link),
                              Curl::PostField.content('results', JSON.pretty_generate(results)))
+  end
+
+  # Report Harvester status message
+  def report_status(status_msg)
+    if @cm_url
+      curl_url = @cm_url+"/update_status"
+      c = Curl::Easy.http_post(curl_url,
+                               Curl::PostField.content('selector_id', @selector_id),
+                               Curl::PostField.content('status_message', status_msg))
+    end
   end
 
   # Print output in JSON
