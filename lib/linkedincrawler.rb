@@ -4,6 +4,7 @@ require 'generalscraper'
 
 require 'selenium-webdriver'
 require 'pry'
+require 'headless'
 
 class LinkedinCrawler
   def initialize(search_terms, retry_limit, requests, requests_google, requests_google2, solver_details, cm_hash)
@@ -26,30 +27,39 @@ class LinkedinCrawler
 
   # Run search terms and get results
   def search
-   
+    # Get matching profiles
+    urls = google_queries
+    
+    # Get pages and report results
+    get_pages(urls)
+    report_status("Data collection completed for " + @search_terms.to_s)
+  end
+
+  # Run queries on google
+  def google_queries
     begin
       # Run Google search
-    g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details, @cm_hash)
-    urls = g.getURLs
-   
-    # Look for new LI urls
-    g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details, @cm_hash)
-    urls = JSON.parse(urls) + JSON.parse(g2.getURLs)
+      g = GeneralScraper.new("site:linkedin.com/pub -site:linkedin.com/pub/dir/", @search_terms, @requests_google, @solver_details, @cm_hash)
+      urls = g.getURLs
+
+      # Look for new LI urls
+      g2 = GeneralScraper.new("site:linkedin.com/in", @search_terms, @requests_google2, @solver_details, @cm_hash)
+      urls = JSON.parse(urls) + JSON.parse(g2.getURLs)
     rescue => e
       report_status("Error running Google Crawler from LinkedIn Crawler: " +e.to_s)
       binding.pry
     end
-    
-    # Scrape each resulting LinkedIn page
-    urls.each do |profile|
-      if check_right_page(profile)
-        scrape(profile)
-      end
-    end
+    return urls
+  end
 
-    # Close all the browsers when done
-    @requests.close_all_browsers
-    report_status("Data collection completed for " + @search_terms.to_s)
+  # Get each page itself
+  def get_pages(urls)
+    profiles = urls.select{|u| check_right_page(u)}
+    t = TranslatePage.new(profiles, @requests)
+    parsed_profiles = t.translate
+    parsed_profiles.each do |profile|
+      parse_and_report(profile[:url], profile[:html])
+    end
   end
 
   # Check that it is actually a LinkedIn profile page
@@ -72,28 +82,16 @@ class LinkedinCrawler
     return (parsed_profile == nil) || parsed_profile.empty? || parsed_profile.first["parsing_failed"]
   end
 
-  # Scrape each page
-  def scrape(profile_url)
-    # Get profile page
-    profile_html = @requests.get_page(profile_url)
-
+  # Parse each page
+  def parse_and_report(profile_url, profile_html)
     # Parse profile
     l = LinkedinParser.new(profile_html, profile_url, {timestamp: Time.now, search_terms: @search_terms})
     parsed_profile = JSON.parse(l.results_by_job)
 
     # Check if it failed or succeeded
     if profile_parsing_failed?(parsed_profile)
-      # Handle something wrong- restart in case it is blocked and rescrape
-      if @retry_count < @retry_limit
-        @requests.restart_browser
-        @retry_count += 1
-        report_status("Profile parsing failed for "+profile_url.to_s+". Retrying...")
-        scrape(profile_url)
-      else # Just save it and move on
-        report_status("Profile parsing failed for "+profile_url.to_s+". Moving on.")
-        report_results(parsed_profile, profile_url)
-      end
-      
+      report_status("Profile parsing failed for "+profile_url.to_s+". Moving on.")
+      report_results(parsed_profile, profile_url)
     else # It succeeded!
       report_results(parsed_profile, profile_url)
     end

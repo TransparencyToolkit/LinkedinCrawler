@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'linkedincrawler'
-  s.version     = '0.0.19'
-  s.date        = '2016-10-30'
+  s.version     = '0.0.20'
+  s.date        = '2017-02-18'
   s.summary     = 'Crawls public LinkedIn profiles'
   s.description = 'Crawls public LinkedIn profiles via Google'
   s.authors     = ['M. C. McGrath']
